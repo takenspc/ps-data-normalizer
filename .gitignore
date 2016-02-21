@@ -1,0 +1,7 @@
+node_modules/
+lib/chromium/features.json
+lib/edge/status.json
+lib/gecko/md
+lib/webkit/features.json
+*.js
+*.map
