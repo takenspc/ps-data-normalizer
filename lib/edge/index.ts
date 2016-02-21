@@ -5,9 +5,11 @@ import { StatusEntry, SpecEntry, Status } from '../';
 
 
 interface IEStatus {
-    text: string
-    iePrefixed: string
-    ieUnprefixed: string
+    status: string
+    link: string
+    prefixed: string
+    unprefixed: string
+    priority?: string
     flag?: boolean
 }
 
@@ -22,11 +24,11 @@ const statusMap = new Map<string, string>([
 ]);
 
 function normalizeStatus(ieStatus: IEStatus): Status {
-    const text = statusMap.get(ieStatus.text);
+    const text = statusMap.get(ieStatus.status);
 
-    const channel = ieStatus.text === 'Preview Release' ? Status.CHANNEL_PREVIEW : Status.CHANNEL_STABLE;
+    const channel = ieStatus.status === 'Preview Release' ? Status.CHANNEL_PREVIEW : Status.CHANNEL_STABLE;
 
-    const prefixed = ieStatus.text === 'Prefixed';
+    const prefixed = ieStatus.status === 'Prefixed';
     const behindFlag = !!ieStatus.flag;
 
     return new Status(text, channel, behindFlag, prefixed);
@@ -40,10 +42,10 @@ export async function parse(): Promise<SpecEntry[]> {
     const jsonPath = path.join(__dirname, 'status.json');
     const data = await readJSON(jsonPath);
 
-    for (const entry of data) {
-        const id = entry.name;
+    for (const entry of data.data) {
+        const id = entry.normalized_name;
         const title = entry.name;
-        const status = normalizeStatus(entry.ieStatus);
+        const status = normalizeStatus(entry.browsers.ie);
         const statusEntry = new StatusEntry(engine, id, title, status);
 
         const url = entry.link;

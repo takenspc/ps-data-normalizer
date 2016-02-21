@@ -30,12 +30,11 @@ function normalizeStatus(webkitStatus: WebKitStatus): Status {
     return new Status(text, channel, behindFlag, prefixed);
 }
 
-
-export async function parse(): Promise<SpecEntry[]> {
+async function parseComponent(component: string): Promise<SpecEntry[]> {
     const specEntries: SpecEntry[] = [];
     const engine = 'webkit';
 
-    const jsonPath = path.join(__dirname, 'features.json');
+    const jsonPath = path.join(__dirname, component + '-features.json');
     const data = await readJSON(jsonPath);
 
     for (const entry of data.specification) {
@@ -58,4 +57,13 @@ export async function parse(): Promise<SpecEntry[]> {
     }
 
     return specEntries;
+}
+
+export async function parse(): Promise<SpecEntry[]> {
+    const specEntriesList = await Promise.all([
+        parseComponent('jsc'),
+        parseComponent('webcore'),
+    ]);
+    
+    return specEntriesList[0].concat(specEntriesList[1])
 }

@@ -37,7 +37,7 @@ export async function parse(): Promise<SpecEntry[]> {
     const specEntries: SpecEntry[] = [];
     const engine = 'gecko';
 
-    const dirPath = path.join(__dirname, 'md');
+    const dirPath = path.join(__dirname, 'platatus', 'features');
     const files = await readdir(dirPath);
     for (const file of files) {
         if (!file.endsWith('.md')) {
