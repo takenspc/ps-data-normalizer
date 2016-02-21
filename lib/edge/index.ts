@@ -48,7 +48,7 @@ export async function parse(): Promise<SpecEntry[]> {
         const status = normalizeStatus(entry.browsers.ie);
         const statusEntry = new StatusEntry(engine, id, title, status);
 
-        const url = entry.link;
+        const url = entry.spec.link;
         const specEntry = new SpecEntry(url);
         specEntry.statusMap.set(engine, statusEntry);
 
