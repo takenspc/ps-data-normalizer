@@ -1,7 +1,8 @@
 node_modules/
 lib/chromium/features.json
 lib/edge/status.json
-lib/gecko/md
-lib/webkit/features.json
+lib/gecko/platatus
+lib/webkit/jsc-features.json
+lib/webkit/webcore-features.json
 *.js
 *.map

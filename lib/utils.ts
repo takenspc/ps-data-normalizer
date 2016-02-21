@@ -1,10 +1,60 @@
 'use strict';
 import * as assert from 'assert';
+import * as childProcess from 'child_process';
 import * as fs from 'fs';
+import * as https from 'https';
 import * as path from 'path';
 import * as remark from 'remark';
 import * as yaml from 'js-yaml';
 
+
+export function exec(command: string, cwd: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        childProcess.exec(command, { cwd: cwd }, (err, stdout, stderr) => {
+            if (err) {
+                console.error(stderr);
+                reject(err);
+                return;
+            }
+            
+            resolve();
+        });
+    });
+}
+
+export function download(url: string, outPath: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        const writeStream = fs.createWriteStream(outPath);
+
+        // write
+        writeStream.on('error', (err) => {
+            console.error(err);
+            console.error(err.stack);
+            reject(err);
+        });
+
+        writeStream.on('finish', () => {
+            resolve();
+        });
+
+        // request
+        const request = https.get(url, (res) => {
+            res.on('data', (data) => {
+                writeStream.write(data);
+            });
+
+            res.on('end', () => {
+                writeStream.end();
+            });
+        });
+
+        request.on('error', (err) => {
+            console.error(err);
+            console.error(err.stack);
+            reject(err);
+        });
+    });
+}
 
 function readFile(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
