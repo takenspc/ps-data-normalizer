@@ -33,7 +33,7 @@ function normalizeStatus(entry): Status {
 
 
 export async function parse(): Promise<SpecEntry[]> {
-const specEntries: SpecEntry[] = [];
+    const specEntries: SpecEntry[] = [];
     const engine = 'chromium';
 
     const jsonPath = path.join(__dirname, 'features.json');
@@ -45,11 +45,13 @@ const specEntries: SpecEntry[] = [];
         const status = normalizeStatus(entry);
         const statusEntry = new StatusEntry(engine, id, title, status);
 
-        const url = entry.spec_link;
-        const specEntry = new SpecEntry(url);
-        specEntry.statusMap.set(engine, statusEntry);
+        const urls = entry.spec_link ? entry.spec_link.split(',') : [''];
+        for (const url of urls) {
+            const specEntry = new SpecEntry(url.trim());
+            specEntry.statusMap.set(engine, statusEntry);
 
-        specEntries.push(specEntry);
+            specEntries.push(specEntry);
+        }
     }
 
     return specEntries;
