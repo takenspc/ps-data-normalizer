@@ -1,5 +1,6 @@
 'use strict';
 import { SpecEntry } from './';
+import { normalize } from 'ps-url-normalizer';
 
 
 export function merge(specEntriesList: SpecEntry[][]): SpecEntry[] {
@@ -13,13 +14,16 @@ export function merge(specEntriesList: SpecEntry[][]): SpecEntry[] {
                 entries.push(specEntry);
                 continue;
             }
-            
-            if (!urlToSpecEntry.has(url)) {
-                urlToSpecEntry.set(url, specEntry);
+
+            const normalizedURL = normalize(url);
+            specEntry.url = normalizedURL;
+
+            if (!urlToSpecEntry.has(normalizedURL)) {
+                urlToSpecEntry.set(normalizedURL, specEntry);
                 continue;
             }
 
-            const entry = urlToSpecEntry.get(url);
+            const entry = urlToSpecEntry.get(normalizedURL);
             for (const pair of specEntry.statusMap) {
                 const engine = pair[0];
                 const statusEntry = pair[1];
