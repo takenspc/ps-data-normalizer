@@ -11,15 +11,16 @@ const statusMap = new Map<string, string>([
 ]);
 
 function normalizeStatus(firefoxStatus: string): Status {
-    let text;
-    let channel;
+    const originalStatus = firefoxStatus;
 
-    const version = parseInt(firefoxStatus, 10);
+    let status: string;
+    let channel: number;
+    const version = parseInt(originalStatus, 10);
     if (isNaN(version)) {
-        text = statusMap.get(firefoxStatus);
+        status = statusMap.get(originalStatus);
         channel = null;
     } else {
-        text = Status.STATUS_SUPPORTED;
+        status = Status.STATUS_SUPPORTED;
         channel = version;
     }
 
@@ -27,7 +28,7 @@ function normalizeStatus(firefoxStatus: string): Status {
     const behindFlag = false;
     const prefixed = false;
 
-    return new Status(text, channel, behindFlag, prefixed);
+    return new Status(status, originalStatus, channel, behindFlag, prefixed);
 }
 
 

@@ -16,12 +16,13 @@ const statusMap = new Map<string, string>([
 ]);
 
 function normalizeStatus(entry): Status {
-    let text = statusMap.get(entry.impl_status_chrome);
-    let channel = entry.shipped_milestone;
+    const originalStatus = entry.impl_status_chrome;
+    const status = statusMap.get(originalStatus);
+    const channel = entry.shipped_milestone;
 
     const behindFlag = !!entry.meta.needFlag;
     const prefixed = !!entry.prefixed;
-    return new Status(text, channel, behindFlag, prefixed);
+    return new Status(status, originalStatus, channel, behindFlag, prefixed);
 }
 
 

@@ -24,14 +24,15 @@ const statusMap = new Map<string, string>([
 ]);
 
 function normalizeStatus(ieStatus: IEStatus): Status {
-    const text = statusMap.get(ieStatus.status);
+    const originalStatus = ieStatus.status;
+    const status = statusMap.get(originalStatus);
 
     const channel = ieStatus.unprefixed || ieStatus.prefixed || null;
 
-    const prefixed = ieStatus.status === 'Prefixed';
+    const prefixed = originalStatus === 'Prefixed';
     const behindFlag = !!ieStatus.flag;
 
-    return new Status(text, channel, behindFlag, prefixed);
+    return new Status(status, originalStatus, channel, behindFlag, prefixed);
 }
 
 

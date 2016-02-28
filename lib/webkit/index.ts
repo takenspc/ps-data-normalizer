@@ -20,14 +20,15 @@ const statusMap = new Map<string, string>([
 ]);
 
 function normalizeStatus(webkitStatus: WebKitStatus): Status {
-    const text = statusMap.get(webkitStatus.status);
+    const originalStatus = webkitStatus.status;
+    const status = statusMap.get(originalStatus);
     const behindFlag = !!webkitStatus['enabled-by-default'];
 
     // there are no corresponding entries
     const channel = null;
     const prefixed = false;
 
-    return new Status(text, channel, behindFlag, prefixed);
+    return new Status(status, originalStatus, channel, behindFlag, prefixed);
 }
 
 async function parseComponent(component: string): Promise<SpecEntry[]> {

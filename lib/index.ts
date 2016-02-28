@@ -1,6 +1,8 @@
 'use strict';
+
 export class Status {
     status: string
+    originalStatus: string
     channel: number
     behindFlag: boolean
     prefixed: boolean
@@ -13,8 +15,9 @@ export class Status {
     static STATUS_REMOVED: string = 'removed'
 
 
-    constructor(status: string, channel: number, behindFlag: boolean, prefixed: boolean) {
+    constructor(status: string, originalStatus: string, channel: number, behindFlag: boolean, prefixed: boolean) {
         this.status = status;
+        this.originalStatus = originalStatus;
         this.channel = channel;
         this.behindFlag = behindFlag;
         this.prefixed = prefixed;
