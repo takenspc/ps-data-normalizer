@@ -28,21 +28,14 @@ export class StatusEntry {
     engine: string
     id: string
     title: string
+    url: string
     status: Status
 
-    constructor(engine: string, id: string, title: string, status: Status) {
+    constructor(engine: string, id: string, title: string, url: string, status: Status) {
         this.engine = engine;
         this.id = id;
         this.title = title;
-        this.status = status;
-    }
-}
-
-export class SpecEntry {
-    url: string
-    statusMap: Map<string, StatusEntry> = new Map<string, StatusEntry>();
-
-    constructor(url: string) {
         this.url = url;
+        this.status = status;
     }
 }

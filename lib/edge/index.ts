@@ -1,7 +1,7 @@
 'use strict';
 import * as path from 'path';
 import { readJSON } from '../utils';
-import { StatusEntry, SpecEntry, Status } from '../';
+import { StatusEntry, Status } from '../';
 
 
 interface IEStatus {
@@ -36,8 +36,8 @@ function normalizeStatus(ieStatus: IEStatus): Status {
 }
 
 
-export async function parse(): Promise<SpecEntry[]> {
-    const specEntries: SpecEntry[] = [];
+export async function parse(): Promise<StatusEntry[]> {
+    const statusEntries: StatusEntry[] = [];
     const engine = 'edge';
 
     const jsonPath = path.join(__dirname, 'status.json');
@@ -46,15 +46,12 @@ export async function parse(): Promise<SpecEntry[]> {
     for (const entry of data.data) {
         const id = entry.normalized_name;
         const title = entry.name;
-        const status = normalizeStatus(entry.browsers.ie);
-        const statusEntry = new StatusEntry(engine, id, title, status);
-
         const url = entry.spec.link;
-        const specEntry = new SpecEntry(url);
-        specEntry.statusMap.set(engine, statusEntry);
+        const status = normalizeStatus(entry.browsers.ie);
 
-        specEntries.push(specEntry);
+        const statusEntry = new StatusEntry(engine, id, title, url, status);
+        statusEntries.push(statusEntry);
     }
 
-    return specEntries;
+    return statusEntries;
 }

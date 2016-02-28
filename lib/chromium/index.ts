@@ -1,7 +1,7 @@
 'use strict';
 import * as path from 'path';
 import { readJSON } from '../utils';
-import { StatusEntry, SpecEntry, Status } from '../';
+import { StatusEntry, Status } from '../';
 
 const statusMap = new Map<string, string>([
     ['Enabled by default', Status.STATUS_SUPPORTED],
@@ -26,8 +26,8 @@ function normalizeStatus(entry): Status {
 }
 
 
-export async function parse(): Promise<SpecEntry[]> {
-    const specEntries: SpecEntry[] = [];
+export async function parse(): Promise<StatusEntry[]> {
+    const statusEntries: StatusEntry[] = [];
     const engine = 'chromium';
 
     const jsonPath = path.join(__dirname, 'features.json');
@@ -37,16 +37,13 @@ export async function parse(): Promise<SpecEntry[]> {
         const id = entry.id;
         const title = entry.name;
         const status = normalizeStatus(entry);
-        const statusEntry = new StatusEntry(engine, id, title, status);
 
         const urls = entry.spec_link ? entry.spec_link.split(',') : [''];
         for (const url of urls) {
-            const specEntry = new SpecEntry(url.trim());
-            specEntry.statusMap.set(engine, statusEntry);
-
-            specEntries.push(specEntry);
+            const statusEntry = new StatusEntry(engine, id, title, url.trim(), status);
+            statusEntries.push(statusEntry);
         }
     }
 
-    return specEntries;
+    return statusEntries;
 }

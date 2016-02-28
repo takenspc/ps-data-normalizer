@@ -1,7 +1,7 @@
 'use strict';
 import * as path from 'path';
 import { readdir, readYAML } from '../utils';
-import { StatusEntry, SpecEntry, Status } from '../';
+import { StatusEntry, Status } from '../';
 
 
 const statusMap = new Map<string, string>([
@@ -32,8 +32,8 @@ function normalizeStatus(firefoxStatus: string): Status {
 }
 
 
-export async function parse(): Promise<SpecEntry[]> {
-    const specEntries: SpecEntry[] = [];
+export async function parse(): Promise<StatusEntry[]> {
+    const statusEntries: StatusEntry[] = [];
     const engine = 'gecko';
 
     const dirPath = path.join(__dirname, 'platatus', 'features');
@@ -47,15 +47,13 @@ export async function parse(): Promise<SpecEntry[]> {
 
         const id = entry.title;
         const title = entry.title;
-        const status = normalizeStatus(entry.firefox_status);
-        const statusEntry = new StatusEntry(engine, id, title, status);
-
         const url = entry.spec_url;
-        const specEntry = new SpecEntry(url);
-        specEntry.statusMap.set(engine, statusEntry);
+        const status = normalizeStatus(entry.firefox_status);
 
-        specEntries.push(specEntry);
+        const statusEntry = new StatusEntry(engine, id, title, url, status);
+
+        statusEntries.push(statusEntry);
     }
 
-    return specEntries;
+    return statusEntries;
 }

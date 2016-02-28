@@ -1,40 +1,59 @@
 'use strict';
-import { SpecEntry } from './';
+import { StatusEntry } from './';
 import { normalize } from 'ps-url-normalizer';
 
 
-export function merge(specEntriesList: SpecEntry[][]): SpecEntry[] {
-    const entries: SpecEntry[] = [];
-    const urlToSpecEntry = new Map<string, SpecEntry>();
+export class SpecEntry {
+    url: string
+    engines: Map<string, StatusEntry[]>
 
-    for (const specEntries of specEntriesList) {
-        for (const specEntry of specEntries) {
-            const url = specEntry.url;
+    constructor(url: string, statusEntry: StatusEntry) {
+        this.url = url;
+        this.engines = new Map<string, StatusEntry[]>();
+        this.addStatusEntry(statusEntry);
+    }
+    
+    addStatusEntry(statusEntry: StatusEntry) {
+        const engine = statusEntry.engine;
+        const statusEntries = this.engines.get(engine);
+        if (!statusEntries) {
+            this.engines.set(engine, [statusEntry]);
+        } else {
+            statusEntries.push(statusEntry);
+        }
+    }
+}
+
+
+export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
+    const specEnntries: SpecEntry[] = [];
+    const urlToSpecEntry: Map<string, SpecEntry> = new Map();
+
+    for (const statusEntries of statusEntriesList) {
+        for (const statusEntry of statusEntries) {
+            const url = statusEntry.url;
             if (!url || url === '') {
-                entries.push(specEntry);
+                const specEntry = new SpecEntry(url, statusEntry);
+                specEnntries.push(specEntry);
                 continue;
             }
 
             const normalizedURL = normalize(url);
-            specEntry.url = normalizedURL;
 
             if (!urlToSpecEntry.has(normalizedURL)) {
+                const specEntry = new SpecEntry(url, statusEntry);
                 urlToSpecEntry.set(normalizedURL, specEntry);
                 continue;
             }
 
-            const entry = urlToSpecEntry.get(normalizedURL);
-            for (const pair of specEntry.statusMap) {
-                const engine = pair[0];
-                const statusEntry = pair[1];
-                entry.statusMap.set(engine, statusEntry);
-            }
+            const specEntry = urlToSpecEntry.get(normalizedURL);
+            specEntry.addStatusEntry(statusEntry);
         }
     }
 
     for (const entry of urlToSpecEntry.values()) {
-        entries.push(entry);
+        specEnntries.push(entry);
     }
 
-    return entries;
+    return specEnntries;
 }
