@@ -1,10 +1,10 @@
 'use strict';
 export class Status {
     status: string
-    channel: string
+    channel: number
     behindFlag: boolean
     prefixed: boolean
-        
+
     static STATUS_SUPPORTED: string = 'supported'
     static STATUS_IN_DEVELOPMENT: string = 'in development'
     static STATUS_UNDER_CONSIDERATION: string = 'under consideration'
@@ -12,10 +12,8 @@ export class Status {
     static STATUS_DEPRECATED: string = 'deprecated'
     static STATUS_REMOVED: string = 'removed'
 
-    static CHANNEL_STABLE: string = 'stable'
-    static CHANNEL_PREVIEW: string = 'preview'
 
-    constructor(status: string, channel: string, behindFlag: boolean, prefixed: boolean) {
+    constructor(status: string, channel: number, behindFlag: boolean, prefixed: boolean) {
         this.status = status;
         this.channel = channel;
         this.behindFlag = behindFlag;

@@ -4,8 +4,6 @@ import { readdir, readYAML } from '../utils';
 import { StatusEntry, SpecEntry, Status } from '../';
 
 
-const STABLE_VERSION: number = 44;
-
 const statusMap = new Map<string, string>([
     ["in-development", Status.STATUS_IN_DEVELOPMENT],
     ["under-consideration", Status.STATUS_UNDER_CONSIDERATION],
@@ -13,16 +11,16 @@ const statusMap = new Map<string, string>([
 ]);
 
 function normalizeStatus(firefoxStatus: string): Status {
-    let text = Status.STATUS_SUPPORTED;
-    let channel = Status.CHANNEL_STABLE;
+    let text;
+    let channel;
 
     const version = parseInt(firefoxStatus, 10);
     if (isNaN(version)) {
         text = statusMap.get(firefoxStatus);
+        channel = null;
     } else {
-        if (version < STABLE_VERSION) {
-            channel = Status.CHANNEL_PREVIEW;
-        }
+        text = Status.STATUS_SUPPORTED;
+        channel = version;
     }
 
     // there are no corresponding entries

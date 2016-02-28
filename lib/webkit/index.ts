@@ -24,7 +24,7 @@ function normalizeStatus(webkitStatus: WebKitStatus): Status {
     const behindFlag = !!webkitStatus['enabled-by-default'];
 
     // there are no corresponding entries
-    const channel = Status.CHANNEL_PREVIEW;
+    const channel = null;
     const prefixed = false;
 
     return new Status(text, channel, behindFlag, prefixed);
@@ -41,7 +41,7 @@ async function parseComponent(component: string): Promise<SpecEntry[]> {
         const id = entry.name;
         const title = entry.name;
 
-        // CSS Media Queries Level 4
+        // CSS Media Queries Level 4 and so on
         if (!entry.status) {
             continue;
         }

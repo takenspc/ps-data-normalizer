@@ -7,8 +7,8 @@ import { StatusEntry, SpecEntry, Status } from '../';
 interface IEStatus {
     status: string
     link: string
-    prefixed: string
-    unprefixed: string
+    prefixed: number
+    unprefixed: number
     priority?: string
     flag?: boolean
 }
@@ -26,7 +26,7 @@ const statusMap = new Map<string, string>([
 function normalizeStatus(ieStatus: IEStatus): Status {
     const text = statusMap.get(ieStatus.status);
 
-    const channel = ieStatus.status === 'Preview Release' ? Status.CHANNEL_PREVIEW : Status.CHANNEL_STABLE;
+    const channel = ieStatus.unprefixed || ieStatus.prefixed || null;
 
     const prefixed = ieStatus.status === 'Prefixed';
     const behindFlag = !!ieStatus.flag;

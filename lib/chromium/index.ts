@@ -3,8 +3,6 @@ import * as path from 'path';
 import { readJSON } from '../utils';
 import { StatusEntry, SpecEntry, Status } from '../';
 
-const STABLE_VERSION: number = 48;
-
 const statusMap = new Map<string, string>([
     ['Enabled by default', Status.STATUS_SUPPORTED],
     ['Behind a flag', Status.STATUS_SUPPORTED],
@@ -19,14 +17,9 @@ const statusMap = new Map<string, string>([
 
 function normalizeStatus(entry): Status {
     let text = statusMap.get(entry.impl_status_chrome);
-    let channel = Status.CHANNEL_STABLE;
+    let channel = entry.shipped_milestone;
 
-    const version = entry.shipped_milestone;
-    if (version < STABLE_VERSION) {
-        channel = Status.CHANNEL_PREVIEW;
-    }
-
-    const behindFlag = entry.meta.needFlag;
+    const behindFlag = !!entry.meta.needFlag;
     const prefixed = !!entry.prefixed;
     return new Status(text, channel, behindFlag, prefixed);
 }
