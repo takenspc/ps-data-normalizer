@@ -21,6 +21,17 @@ function writeFile(filePath: string, text: string): Promise<void> {
     });
 }
 
+function repalceMapWithObject(key: string, map: Map<any, any>): any {
+    if (map instanceof Map) {
+        const obj = {};
+        for (const pair of map) {
+            obj[pair[0]] = pair[1];
+        }
+        return obj;
+    }
+
+    return map;
+}
 
 /*
  * Status Entry Formatter
@@ -62,7 +73,7 @@ function maxLengthOfEngines(specEntry: SpecEntry): number {
 async function normalize(): Promise<any> {
     const specEntries = await normalizer.normalize();
 
-    await writeFile('data.json', JSON.stringify(specEntries));
+    await writeFile('data.json', JSON.stringify(specEntries, repalceMapWithObject));
 
     const lines: string[] = [];
     const engines = ['chromium', 'edge', 'gecko', 'webkit'];
