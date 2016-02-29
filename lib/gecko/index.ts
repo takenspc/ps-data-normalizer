@@ -45,7 +45,7 @@ export async function parse(): Promise<StatusEntry[]> {
         const mdPath = path.join(dirPath, file);
         const entry = await readYAML(mdPath);
 
-        const id = entry.title;
+        const id = file.replace(/\.md$/, '');
         const title = entry.title;
         const url = entry.spec_url;
         const status = normalizeStatus(entry.firefox_status);
