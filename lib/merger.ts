@@ -26,7 +26,7 @@ export class SpecEntry {
 
 
 export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
-    const specEnntries: SpecEntry[] = [];
+    const specEntries: SpecEntry[] = [];
     const urlToSpecEntry: Map<string, SpecEntry> = new Map();
 
     for (const statusEntries of statusEntriesList) {
@@ -34,14 +34,14 @@ export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
             const url = statusEntry.url;
             if (!url || url === '') {
                 const specEntry = new SpecEntry(url, statusEntry);
-                specEnntries.push(specEntry);
+                specEntries.push(specEntry);
                 continue;
             }
 
             const normalizedURL = normalize(url);
 
             if (!urlToSpecEntry.has(normalizedURL)) {
-                const specEntry = new SpecEntry(url, statusEntry);
+                const specEntry = new SpecEntry(normalizedURL, statusEntry);
                 urlToSpecEntry.set(normalizedURL, specEntry);
                 continue;
             }
@@ -52,8 +52,8 @@ export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
     }
 
     for (const entry of urlToSpecEntry.values()) {
-        specEnntries.push(entry);
+        specEntries.push(entry);
     }
 
-    return specEnntries;
+    return specEntries;
 }
