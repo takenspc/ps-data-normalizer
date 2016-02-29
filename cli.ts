@@ -32,9 +32,6 @@ function formatHeader(): string[] {
     values.push('title' /* statusEntry.title */);
     values.push('status' /* statusEntry.status.status */);
     values.push('original status' /* statusEntry.status.originalStatus */);
-    values.push('channel' /* statusEntry.status.channel + '' */);
-    values.push('prefixed?' /* statusEntry.status.prefixed ? 'yes' : 'no' */);
-    values.push('behind a flag?' /* statusEntry.status.behindFlag ? 'yes' : 'no' */);
 
     return values;
 }
@@ -46,9 +43,6 @@ function formatStatusEntry(statusEntry: StatusEntry): string[] {
     values.push(statusEntry ? statusEntry.title : '');
     values.push(statusEntry ? statusEntry.status.status : '');
     values.push(statusEntry ? statusEntry.status.originalStatus : '');
-    values.push(statusEntry ? statusEntry.status.channel + '' : '');
-    values.push(statusEntry ? statusEntry.status.prefixed ? 'yes' : 'no' : '');
-    values.push(statusEntry ? statusEntry.status.behindFlag ? 'yes' : 'no' : '');
 
     return values;
 }
