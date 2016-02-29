@@ -4,7 +4,6 @@ import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as path from 'path';
-import * as remark from 'remark';
 import * as yaml from 'js-yaml';
 
 
@@ -76,12 +75,17 @@ export function readJSON(jsonPath: string): Promise<any> {
     });
 }
 
+function getYAMLBlock(text: string): string {
+    const pattern = /---\n([\s\S]+?)\n---/;
+    const matchObject = pattern.exec(text);
+    assert(matchObject, 'text must have a YAML block: ' + text);
+    return matchObject[1];
+}
+
 export function readYAML(mdPath: string): Promise<any> {
     return readFile(mdPath).then((text) => {
-        const ast = remark.parse(text);
-        const yamlNode = ast.children[0];
-        assert.strictEqual(yamlNode.type, 'yaml', 'A markdown file must start with a yaml block.');
-        return yaml.safeLoad(yamlNode.value);
+        const yamlBlock = getYAMLBlock(text);
+        return yaml.safeLoad(yamlBlock);
     });
 }
 
