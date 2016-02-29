@@ -6,6 +6,7 @@ import { normalize } from 'ps-url-normalizer';
 export class SpecEntry {
     url: string
     engines: Map<string, StatusEntry[]>
+    maxEntryLength: number = 0
 
     constructor(url: string, statusEntry: StatusEntry) {
         this.url = url;
@@ -20,6 +21,11 @@ export class SpecEntry {
             this.engines.set(engine, [statusEntry]);
         } else {
             statusEntries.push(statusEntry);
+        }
+
+        const entryLength = this.engines.get(engine).length;
+        if (this.maxEntryLength < entryLength) {
+          this.maxEntryLength = entryLength;
         }
     }
 

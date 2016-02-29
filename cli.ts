@@ -59,17 +59,6 @@ function formatStatusEntry(statusEntry: StatusEntry): string[] {
 }
 
 
-function maxLengthOfEngines(specEntry: SpecEntry): number {
-    let max = 0;
-    for (const statusEntries of specEntry.engines.values()) {
-        const len = statusEntries.length;
-        if (max < len) {
-            max = len;
-        }
-    }
-    return max;
-}
-
 async function normalize(): Promise<any> {
     const specEntries = await normalizer.normalize();
 
@@ -91,7 +80,7 @@ async function normalize(): Promise<any> {
 
     for (const specEntry of specEntries) {
         const url = specEntry.url;
-        for (let i = 0, len = maxLengthOfEngines(specEntry); i < len; i++) {
+        for (let i = 0, len = specEntry.maxEntryLength; i < len; i++) {
             let values = [url];
             for (const engine of engines) {
                 const statusEntries = specEntry.engines.get(engine);
