@@ -22,8 +22,19 @@ export class SpecEntry {
             statusEntries.push(statusEntry);
         }
     }
-}
 
+    static compare(a: SpecEntry, b: SpecEntry): number {
+        if (a.url < b.url) {
+            return -1;
+        }
+
+        if (a.url > b.url) {
+            return 1;
+        }
+
+        return 0;
+    }
+}
 
 export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
     const specEntries: SpecEntry[] = [];
@@ -55,5 +66,5 @@ export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
         specEntries.push(entry);
     }
 
-    return specEntries;
+    return specEntries.sort(SpecEntry.compare);
 }
