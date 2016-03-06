@@ -8,9 +8,9 @@ export class Status {
     prefixed: boolean
 
     static STATUS_SUPPORTED: string = 'supported'
-    static STATUS_IN_DEVELOPMENT: string = 'in development'
-    static STATUS_UNDER_CONSIDERATION: string = 'under consideration'
-    static STATUS_NOT_PLANNED: string = 'not planned'
+    static STATUS_IN_DEVELOPMENT: string = 'in-development'
+    static STATUS_UNDER_CONSIDERATION: string = 'under-consideration'
+    static STATUS_NOT_PLANNED: string = 'not-planned'
     static STATUS_DEPRECATED: string = 'deprecated'
     static STATUS_REMOVED: string = 'removed'
 
