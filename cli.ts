@@ -1,7 +1,6 @@
 'use strict';
 import * as fs from 'fs';
 import { StatusEntry } from './lib';
-import { SpecEntry } from './lib/merger';
 import * as normalizer from './';
 
 
