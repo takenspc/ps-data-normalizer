@@ -62,7 +62,7 @@ function formatStatusEntry(statusEntry: StatusEntry): string[] {
 async function normalize(): Promise<any> {
     const specEntries = await normalizer.normalize();
 
-    await writeFile('data.json', JSON.stringify(specEntries, repalceMapWithObject));
+    await writeFile('data.json', JSON.stringify(specEntries, repalceMapWithObject, '\t'));
 
     const lines: string[] = [];
     const engines = ['chromium', 'edge', 'gecko', 'webkit'];
