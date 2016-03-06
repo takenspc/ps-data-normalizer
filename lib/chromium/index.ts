@@ -10,7 +10,7 @@ const statusMap = new Map<string, string>([
     ['In development', Status.STATUS_IN_DEVELOPMENT],
     ['Proposed', Status.STATUS_UNDER_CONSIDERATION],
     ['No active development', Status.STATUS_NOT_PLANNED],
-    ['No longer pursuing', Status.STATUS_UNDER_CONSIDERATION],
+    ['No longer pursuing', Status.STATUS_NOT_PLANNED],
     ['Deprecated', Status.STATUS_DEPRECATED],
     ['Removed', Status.STATUS_REMOVED],
 ]);
@@ -20,7 +20,7 @@ function normalizeStatus(entry): Status {
     const status = statusMap.get(originalStatus);
     const channel = entry.shipped_milestone;
 
-    const behindFlag = !!entry.meta.needFlag;
+    const behindFlag = !!entry.meta.needFlag || originalStatus === 'Behind a flag';
     const prefixed = !!entry.prefixed;
     return new Status(status, originalStatus, channel, behindFlag, prefixed);
 }
