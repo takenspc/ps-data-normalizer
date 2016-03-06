@@ -64,6 +64,7 @@ async function normalize(): Promise<any> {
 
     await writeFile('data.json', JSON.stringify(specEntries, repalceMapWithObject, '\t'));
 
+    /*
     const lines: string[] = [];
     const engines = ['chromium', 'edge', 'gecko', 'webkit'];
 
@@ -92,6 +93,7 @@ async function normalize(): Promise<any> {
     }
 
     await writeFile('data.tsv', lines.join('\n'));
+    */
 }
 
 
