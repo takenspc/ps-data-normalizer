@@ -38,31 +38,40 @@ async function parseComponent(component: string): Promise<StatusEntry[]> {
     const jsonPath = path.join(__dirname, component + '-features.json');
     const data = await readJSON(jsonPath);
 
-    for (const entry of data.specification) {
-        const id = entry.name;
-        const title = entry.name;
-        const url = entry.url;
-
-        // CSS Media Queries Level 4 and so on
-        if (!entry.status) {
+    for (const key in data) {
+        if (!data.hasOwnProperty(key)) {
             continue;
         }
-        
-        const status = normalizeStatus(entry.status);
 
-        const statusEntry = new StatusEntry(engine, id, title, url, status);
+        for (const entry of data[key]) {
+            const id = entry.name;
+            const title = entry.name;
+            const url = entry.url;
 
-        statusEntries.push(statusEntry);
+            // CSS Media Queries Level 4 and so on
+            if (!entry.status) {
+                continue;
+            }
+
+            const status = normalizeStatus(entry.status);
+
+            const statusEntry = new StatusEntry(engine, id, title, url, status);
+
+            statusEntries.push(statusEntry);
+        }
     }
 
     return statusEntries;
 }
 
 export async function parse(): Promise<StatusEntry[]> {
-    const specEntriesList = await Promise.all([
-        parseComponent('jsc'),
-        parseComponent('webcore'),
-    ]);
-    
-    return specEntriesList[0].concat(specEntriesList[1])
+    let statusEntries = [];
+
+    const jsc = await parseComponent('jsc');
+    statusEntries = statusEntries.concat(jsc);
+
+    const webcore = await parseComponent('webcore');
+    statusEntries = statusEntries.concat(webcore);
+
+    return statusEntries;
 }
