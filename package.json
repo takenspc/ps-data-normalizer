@@ -14,7 +14,9 @@
   "license": "MIT",
   "dependencies": {
     "js-yaml": "^3.5.3",
-    "ps-url-normalizer": "takenspc/ps-url-normalizer"
+    "json-stable-stringify": "^1.0.1",
+    "ps-url-normalizer": "takenspc/ps-url-normalizer",
+    "tldjs": "^1.6.2"
   },
   "devDependencies": {
     "typescript": "^1.7.5"
