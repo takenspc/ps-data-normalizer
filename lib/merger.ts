@@ -2,7 +2,7 @@
 import { parse, format, Url } from 'url';
 import * as tld from 'tldjs';
 import { StatusEntry } from './';
-import { normalize } from 'ps-url-normalizer';
+import { normalizeWithRedirectInfo } from 'ps-url-normalizer';
 
 
 class FragmentEntry {
@@ -35,8 +35,8 @@ class URLEntry {
         this.url = url;
     }
 
-    addStatusEntry(statusEntry: StatusEntry): void {
-        const fragment = parse(statusEntry.url || '').hash || '';
+    addStatusEntry(url: string, statusEntry: StatusEntry): void {
+        const fragment = parse(url || '').hash || '';
         let fragmentEntry = this.fragments.get(fragment);
 
         if (!fragmentEntry) {
@@ -57,16 +57,16 @@ class HostEntry {
         this.host = host;
     }
 
-    addStatusEntry(statusEntry: StatusEntry): void {
-        const url = HostEntry.getURLWithoutFragment(statusEntry.url);
-        let urlEntry = this.urls.get(url);
+    addStatusEntry(url: string, statusEntry: StatusEntry): void {
+        const urlWithoutFragment = HostEntry.getURLWithoutFragment(url);
+        let urlEntry = this.urls.get(urlWithoutFragment);
 
         if (!urlEntry) {
-            urlEntry = new URLEntry(url);
-            this.urls.set(url, urlEntry);
+            urlEntry = new URLEntry(urlWithoutFragment);
+            this.urls.set(urlWithoutFragment, urlEntry);
         }
 
-        urlEntry.addStatusEntry(statusEntry);
+        urlEntry.addStatusEntry(url, statusEntry);
     }
 
     static getURLWithoutFragment(url: string): string {
@@ -89,9 +89,8 @@ export class EntityEntry {
         this.entity = entity;
     }
 
-    addStatusEntry(statusEntry: StatusEntry): void {
-        const host = EntityEntry.getHost(statusEntry.url);
-
+    addStatusEntry(url: string,statusEntry: StatusEntry): void {
+        const host = EntityEntry.getHost(url);
 
         let hostEntry = this.hosts.get(host);
 
@@ -100,7 +99,7 @@ export class EntityEntry {
             this.hosts.set(host, hostEntry);
         }
 
-        hostEntry.addStatusEntry(statusEntry);
+        hostEntry.addStatusEntry(url, statusEntry);
     }
 
     static getHost(url: string): string {
@@ -151,8 +150,10 @@ export async function merge(statusEntriesList: StatusEntry[][]): Promise<Map<str
 
     for (const statusEntries of statusEntriesList) {
         for (const statusEntry of statusEntries) {
-            const normalizedURL = await normalize(statusEntry.url || '');
+            const urlInfo = await normalizeWithRedirectInfo(statusEntry.url || '');
+            statusEntry.redirects = urlInfo.redirects;
 
+            const normalizedURL = urlInfo.url;
             const entity = getEntity(normalizedURL);
 
             let entry = entityMap.get(entity);
@@ -161,7 +162,7 @@ export async function merge(statusEntriesList: StatusEntry[][]): Promise<Map<str
                 entityMap.set(entity, entry);
             }
 
-            entry.addStatusEntry(statusEntry);
+            entry.addStatusEntry(normalizedURL, statusEntry);
         }
     }
 

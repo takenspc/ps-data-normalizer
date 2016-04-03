@@ -29,6 +29,7 @@ export class StatusEntry {
     id: string
     title: string
     url: string
+    redirects: any[]
     statusURL: string
     status: Status
 
