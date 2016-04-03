@@ -1,5 +1,6 @@
 'use strict';
 import * as fs from 'fs';
+import * as stringify from 'json-stable-stringify';
 import { StatusEntry } from './lib';
 import * as normalizer from './';
 
@@ -20,79 +21,41 @@ function writeFile(filePath: string, text: string): Promise<void> {
     });
 }
 
-function repalceMapWithObject(key: string, map: Map<any, any>): any {
-    if (map instanceof Map) {
-        const obj = {};
-        for (const pair of map) {
-            obj[pair[0]] = pair[1];
-        }
-        return obj;
-    }
-
-    return map;
-}
-
 /*
  * Status Entry Formatter
  */
-function formatHeader(): string[] {
-    const values: string[] = [];
-
-    values.push('url' /* statusEntry.url */);
-    values.push('title' /* statusEntry.title */);
-    values.push('status' /* statusEntry.status.status */);
-    values.push('original status' /* statusEntry.status.originalStatus */);
-
-    return values;
-}
-
-function formatStatusEntry(statusEntry: StatusEntry): string[] {
-    const values: string[] = [];
-
-    values.push(statusEntry ? statusEntry.url : '');
-    values.push(statusEntry ? statusEntry.title : '');
-    values.push(statusEntry ? statusEntry.status.status : '');
-    values.push(statusEntry ? statusEntry.status.originalStatus : '');
-
-    return values;
-}
-
-
 async function normalize(): Promise<any> {
     const specEntries = await normalizer.normalize();
 
-    await writeFile('data.json', JSON.stringify(specEntries, repalceMapWithObject, '\t'));
+    const text = stringify(specEntries);
 
-    /*
-    const lines: string[] = [];
-    const engines = ['chromium', 'edge', 'gecko', 'webkit'];
-
-    {
-        let values = ['#url'];
-        for (const engine of engines) {
-            values = values.concat(formatHeader().map((header) => {
-                return '#' + engine + ' ' + header; 
-            }));
-        }
-        lines.push(values.join('\t'));
-    }
+    await writeFile('normalized.json', text);
+}
 
 
-    for (const specEntry of specEntries) {
-        const url = specEntry.url;
-        for (let i = 0, len = specEntry.maxEntryLength; i < len; i++) {
-            let values = [url];
-            for (const engine of engines) {
-                const statusEntries = specEntry.engines.get(engine);
-                const statusEntry = (statusEntries && i < statusEntries.length) ? statusEntries[i] : null;
-                values = values.concat(formatStatusEntry(statusEntry));
+/*
+ * Entity Entry Formatter
+ */
+async function merge(): Promise<any> {
+    const specEntries = await normalizer.normalize();
+    const merged = await normalizer.merge(specEntries);
+
+    const text = stringify(merged, {
+        replacer: (key: string, map: Map<any, any>): any => {
+            if (map instanceof Map) {
+                const obj = {};
+                for (const pair of map) {
+                    obj[pair[0]] = pair[1];
+                }
+                return obj;
             }
-            lines.push(values.join('\t'));
-        }
-    }
 
-    await writeFile('data.tsv', lines.join('\n'));
-    */
+            return map;
+        },
+        space: '\t',
+    });
+
+    await writeFile('data.json', text);
 }
 
 
@@ -105,6 +68,8 @@ function run(argv: string[]): Promise<any> {
         return normalizer.update();
     } else if (command === 'normalize') {
         return normalize();
+    } else if (command === 'merge') {
+        return merge();
     }
 
     const err = new Error(`Unknown commad: ${argv.join(' ')}`);

@@ -1,14 +1,19 @@
 'use strict';
+import { StatusEntry } from './lib';
 import * as merger from './lib/merger';
 import * as normalizer from './lib/normalizer';
 import * as updater from './lib/updater';
 
 
-export async function update(): Promise<void> {
-    await updater.update();
+export function update(): Promise<void> {
+    return updater.update();
 }
 
-export async function normalize(): Promise<merger.SpecEntry[]> {
-    const data = await normalizer.normalize();
+export function normalize(): Promise<StatusEntry[][]> {
+    return normalizer.normalize();
+}
+
+export function merge(data: StatusEntry[][]): Promise<Map<string, merger.EntityEntry>> {
     return merger.merge(data);
 }
+

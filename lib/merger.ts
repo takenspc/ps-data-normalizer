@@ -1,123 +1,169 @@
 'use strict';
-import { parse, format } from 'url';
+import { parse, format, Url } from 'url';
+import * as tld from 'tldjs';
 import { StatusEntry } from './';
 import { normalize } from 'ps-url-normalizer';
 
 
-export class FragmentSpecEntry {
+class FragmentEntry {
     fragment: string
     engines: Map<string, StatusEntry[]> = new Map()
-    maxEntryLength: number = 0
 
-    constructor(fragment: string, statusEntry: StatusEntry) {
+    constructor(fragment: string) {
         this.fragment = fragment;
-        this.addStatusEntry(statusEntry);
     }
 
     addStatusEntry(statusEntry: StatusEntry) {
         const engine = statusEntry.engine;
-        if (!this.engines.has(engine)) {
-            const statusEntries = [statusEntry];
+        let statusEntries = this.engines.get(engine);
+
+        if (!statusEntries) {
+            statusEntries = [];
             this.engines.set(engine, statusEntries);
-        } else {
-            const statusEntries = this.engines.get(engine);
-            statusEntries.push(statusEntry);
         }
 
-        const entryLength = this.engines.get(engine).length;
-        if (this.maxEntryLength < entryLength) {
-          this.maxEntryLength = entryLength;
-        }
-    }
-
-    static compare(a: FragmentSpecEntry, b: FragmentSpecEntry): number {
-        if (a.fragment < b.fragment) {
-            return -1;
-        }
-
-        if (a.fragment > b.fragment) {
-            return 1;
-        }
-
-        return 0;
+        statusEntries.push(statusEntry);
     }
 }
 
 
-export class SpecEntry {
+class URLEntry {
     url: string
-    fragments: FragmentSpecEntry[] = []
+    fragments: Map<string, FragmentEntry> = new Map()
 
-    constructor(url: string, statusEntry: StatusEntry) {
+    constructor(url: string) {
         this.url = url;
-        this.addStatusEntry(statusEntry);
     }
 
-    addStatusEntry(statusEntry: StatusEntry) {
+    addStatusEntry(statusEntry: StatusEntry): void {
         const fragment = parse(statusEntry.url || '').hash || '';
+        let fragmentEntry = this.fragments.get(fragment);
 
-        // Use array because map cannot be sorted
-        let fragmentSpecEntry: FragmentSpecEntry = null;
-        for (const entry of this.fragments) {
-            if (entry.fragment === fragment) {
-                fragmentSpecEntry = entry;
-                break;
-            }
+        if (!fragmentEntry) {
+            fragmentEntry = new FragmentEntry(fragment);
+            this.fragments.set(fragment, fragmentEntry);
         }
-        
-        if (!fragmentSpecEntry) {
-            const fragmentSpecEntry = new FragmentSpecEntry(fragment, statusEntry);
-            this.fragments.push(fragmentSpecEntry);
-        } else {
-            fragmentSpecEntry.addStatusEntry(statusEntry);
+
+        fragmentEntry.addStatusEntry(statusEntry);
+    }
+}
+
+
+class HostEntry {
+    host: string
+    urls: Map<string, URLEntry> = new Map()
+
+    constructor(host: string) {
+        this.host = host;
+    }
+
+    addStatusEntry(statusEntry: StatusEntry): void {
+        const url = HostEntry.getURLWithoutFragment(statusEntry.url);
+        let urlEntry = this.urls.get(url);
+
+        if (!urlEntry) {
+            urlEntry = new URLEntry(url);
+            this.urls.set(url, urlEntry);
         }
+
+        urlEntry.addStatusEntry(statusEntry);
     }
 
     static getURLWithoutFragment(url: string): string {
+        if (!url) {
+            return '';
+        }
+
         const urlObject = parse(url);
         urlObject.hash = '';
         return format(urlObject);
     }
+}
 
-    static compare(a: SpecEntry, b: SpecEntry): number {
-        if (a.url < b.url) {
-            return -1;
+
+export class EntityEntry {
+    entity: string
+    hosts: Map<string, HostEntry> = new Map()
+
+    constructor(entity: string) {
+        this.entity = entity;
+    }
+
+    addStatusEntry(statusEntry: StatusEntry): void {
+        const host = EntityEntry.getHost(statusEntry.url);
+
+
+        let hostEntry = this.hosts.get(host);
+
+        if (!hostEntry) {
+            hostEntry = new HostEntry(host);
+            this.hosts.set(host, hostEntry);
         }
 
-        if (a.url > b.url) {
-            return 1;
+        hostEntry.addStatusEntry(statusEntry);
+    }
+
+    static getHost(url: string): string {
+        if (!url) {
+            return '';
         }
 
-        return 0;
+        const urlObject = parse(url);
+        const host = urlObject.host;
+        const pathname = urlObject.pathname;
+        if (host === 'github.com') {
+            const username = /^\/([^/]+)\//.exec(pathname)[1];
+            const entity = username.toLowerCase();
+            return host + '/' + entity;
+        }
+
+        return host;
     }
 }
 
 
-export function merge(statusEntriesList: StatusEntry[][]): SpecEntry[] {
-    const specEntries: SpecEntry[] = [];
-    const urlToSpecEntry: Map<string, SpecEntry> = new Map();
+function getEntity(url: string): string {
+    if (!url) {
+        return '';
+    }
+
+    const urlObject = parse(url);
+    const host = urlObject.host;
+    const pathname = urlObject.pathname;
+    if (host === 'github.com') {
+        const username = /^\/([^/]+)\//.exec(pathname)[1];
+        const entity = username.toLowerCase();
+        return entity;
+    }
+
+    const domain = tld.getDomain(host);
+    let entity = domain.split('.')[0];
+    if (entity === 'w3') {
+        entity = 'w3c';
+    }
+
+    return entity;
+}
+
+
+export async function merge(statusEntriesList: StatusEntry[][]): Promise<Map<string, EntityEntry>> {
+    const entityMap: Map<string, EntityEntry> = new Map();
 
     for (const statusEntries of statusEntriesList) {
         for (const statusEntry of statusEntries) {
-            const normalizedURL = normalize(statusEntry.url || '');
+            const normalizedURL = await normalize(statusEntry.url || '');
 
-            const url = SpecEntry.getURLWithoutFragment(normalizedURL);
+            const entity = getEntity(normalizedURL);
 
-            if (!urlToSpecEntry.has(url)) {
-                const specEntry = new SpecEntry(url, statusEntry);
-                urlToSpecEntry.set(url, specEntry);
-                continue;
+            let entry = entityMap.get(entity);
+            if (!entry) {
+                entry = new EntityEntry(entity);
+                entityMap.set(entity, entry);
             }
 
-            const specEntry = urlToSpecEntry.get(url);
-            specEntry.addStatusEntry(statusEntry);
+            entry.addStatusEntry(statusEntry);
         }
     }
 
-    for (const entry of urlToSpecEntry.values()) {
-        entry.fragments = entry.fragments.sort(FragmentSpecEntry.compare);
-        specEntries.push(entry);
-    }
-
-    return specEntries.sort(SpecEntry.compare);
+    return entityMap;
 }
