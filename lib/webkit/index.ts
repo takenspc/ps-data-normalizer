@@ -38,13 +38,12 @@ async function parseComponent(component: string): Promise<StatusEntry[]> {
     const jsonPath = path.join(__dirname, component + '-features.json');
     const data = await readJSON(jsonPath);
 
-    for (const key in data) {
-        if (!data.hasOwnProperty(key)) {
-            continue;
-        }
+    // key is specification or features
+    for (const key of Object.keys(data)) {
 
         for (const entry of data[key]) {
-            const id = entry.name;
+            const idPrefix = key === 'specification' ? key : 'feature';
+            const id = idPrefix + '-' + entry.name.replace(/ /g, '-').toLowerCase();
             const title = entry.name;
             const url = entry.url;
 
