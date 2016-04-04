@@ -5,7 +5,7 @@ import * as gecko from './gecko/updater';
 import * as webkit from './webkit/updater';
 
 
-export function update(): Promise<any[]> {
+export function update(): Promise<any> {
     return Promise.all([
         chromium.update(),
         edge.update(),

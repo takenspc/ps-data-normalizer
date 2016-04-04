@@ -5,7 +5,7 @@ import * as normalizer from './lib/normalizer';
 import * as updater from './lib/updater';
 
 
-export function update(): Promise<void> {
+export function update(): Promise<any> {
     return updater.update();
 }
 

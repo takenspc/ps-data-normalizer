@@ -8,7 +8,7 @@ function downloadJSON(component: string, jsonPath: string): Promise<void> {
     return download(url, outPath);
 }
 
-export function update(): Promise<any[]> {
+export function update(): Promise<any> {
     return Promise.all([
         downloadJSON('jsc', '/repository/webkit/trunk/Source/JavaScriptCore/features.json'),
         downloadJSON('webcore', '/repository/webkit/trunk/Source/WebCore/features.json'),
