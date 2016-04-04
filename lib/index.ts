@@ -30,7 +30,6 @@ export class StatusEntry {
     title: string
     url: string
     redirects: any[]
-    statusURL: string
     status: Status
 
     constructor(engine: string, id: string, title: string, url: string, status: Status) {
@@ -38,27 +37,6 @@ export class StatusEntry {
         this.id = id;
         this.title = title;
         this.url = url;
-        this.statusURL = StatusEntry.resolveStatusURL(engine, id);
         this.status = status;
-    }
-
-    static resolveStatusURL(engine: string, id: string): string {
-        if (engine === 'chromium') {
-            return 'https://www.chromestatus.com/features/' + encodeURI(id);
-        }
-        
-        if (engine === 'edge') {
-            return 'https://dev.windows.com/en-us/microsoft-edge/platform/status/' + encodeURI(id);
-        }
-        
-        if (engine === 'gecko') {
-            return 'https://platform-status.mozilla.org/#' + encodeURI(id);
-        }
-
-        if (engine === 'webkit') {
-            return 'https://webkit.org/status/#feature-' + encodeURI(id);
-        }
-
-        throw new Error('Unknown engine: ' + engine);
     }
 }
