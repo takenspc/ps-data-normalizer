@@ -5,8 +5,8 @@ import { StatusEntry, Status } from '../';
 
 const statusMap = new Map<string, string>([
     ['Enabled by default', Status.STATUS_SUPPORTED],
-    ['Behind a flag', Status.STATUS_SUPPORTED],
     ['In experimental framework', Status.STATUS_IN_DEVELOPMENT],
+    ['Behind a flag', Status.STATUS_IN_DEVELOPMENT],
     ['In development', Status.STATUS_IN_DEVELOPMENT],
     ['Proposed', Status.STATUS_UNDER_CONSIDERATION],
     ['No active development', Status.STATUS_NOT_PLANNED],
