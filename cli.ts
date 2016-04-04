@@ -1,6 +1,7 @@
 'use strict';
 import * as fs from 'fs';
 import * as stringify from 'json-stable-stringify';
+import { EntityEntry } from './lib/merger';
 import { StatusEntry } from './lib';
 import * as normalizer from './';
 
@@ -24,20 +25,21 @@ function writeFile(filePath: string, text: string): Promise<void> {
 /*
  * Status Entry Formatter
  */
-async function normalize(): Promise<any> {
+async function normalize(): Promise<StatusEntry[][]> {
     const specEntries = await normalizer.normalize();
 
     const text = stringify(specEntries);
 
-    await writeFile('normalized.json', text);
+    await writeFile('raw.json', text);
+
+    return specEntries;
 }
 
 
 /*
  * Entity Entry Formatter
  */
-async function merge(): Promise<any> {
-    const specEntries = await normalizer.normalize();
+async function merge(specEntries: StatusEntry[][]): Promise<Map<string, EntityEntry>> {
     const merged = await normalizer.merge(specEntries);
 
     const text = stringify(merged, {
@@ -56,6 +58,8 @@ async function merge(): Promise<any> {
     });
 
     await writeFile('data.json', text);
+    
+    return merged;
 }
 
 
@@ -69,7 +73,9 @@ function run(argv: string[]): Promise<any> {
     } else if (command === 'normalize') {
         return normalize();
     } else if (command === 'merge') {
-        return merge();
+        return normalize().then((specEntries) => {
+            return merge(specEntries);
+        });
     }
 
     const err = new Error(`Unknown commad: ${argv.join(' ')}`);
