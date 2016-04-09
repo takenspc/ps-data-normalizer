@@ -124,6 +124,7 @@ export interface MergedStatusEntry {
     urls: Map<string, UrlEntry>
     entities: Map<string, Set<string>>
     redirects: Map<string, any>
+    datetime: number
 }
 
 export async function merge(statusEntriesList: StatusEntry[][]): Promise<MergedStatusEntry> {
@@ -172,5 +173,6 @@ export async function merge(statusEntriesList: StatusEntry[][]): Promise<MergedS
         urls: urlMap,
         entities: entityMap,
         redirects: redirectMap,
+        datetime: Date.now(),
     };
 }
