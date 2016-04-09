@@ -23,9 +23,9 @@ const statusMap = new Map<string, string>([
     ['Deprecated', Status.STATUS_DEPRECATED],
 ]);
 
-function normalizeStatus(ieStatus: IEStatus): Status {
-    const originalStatus = ieStatus.status;
-    const status = statusMap.get(originalStatus);
+function normalizeStatus(position: string, ieStatus: IEStatus): Status {
+    const originalStatus = position;
+    const status = statusMap.get(position);
 
     const channel = ieStatus.unprefixed || ieStatus.prefixed || null;
 
@@ -47,7 +47,7 @@ export async function parse(): Promise<StatusEntry[]> {
         const id = entry.normalized_name;
         const title = entry.name;
         const url = entry.spec.link;
-        const status = normalizeStatus(entry.browsers.ie);
+        const status = normalizeStatus(entry.position, entry.browsers.ie);
 
         const statusEntry = new StatusEntry(engine, id, title, url, status);
         statusEntries.push(statusEntry);
