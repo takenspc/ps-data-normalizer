@@ -4,6 +4,18 @@ import * as tld from 'tldjs';
 import { StatusEntry } from './';
 import { normalizeWithRedirectInfo } from 'ps-url-normalizer';
 
+function compareStatusEntry(a: StatusEntry, b: StatusEntry): number {
+    if (a.id < b.id) {
+        return -1;
+    }
+    
+    if (a.id > b.id) {
+        return 1;
+    }
+
+    return 0;
+}
+
 
 class FragmentEntry {
     fragment: string
@@ -13,7 +25,7 @@ class FragmentEntry {
         this.fragment = fragment;
     }
 
-    addStatusEntry(statusEntry: StatusEntry) {
+    addStatusEntry(statusEntry: StatusEntry): void {
         const engine = statusEntry.engine;
         let statusEntries = this.engines.get(engine);
 
@@ -23,6 +35,14 @@ class FragmentEntry {
         }
 
         statusEntries.push(statusEntry);
+    }
+
+    sort(): void {
+        for (const pair of this.engines) {
+            const engine = pair[0];
+            const statusEntries = pair[1].sort(compareStatusEntry);
+            this.engines.set(engine, statusEntries);
+        }
     }
 }
 
@@ -139,6 +159,12 @@ export async function merge(statusEntriesList: StatusEntry[][]): Promise<MergedS
             }
 
             entry.addStatusEntry(normalizedUrl, statusEntry);
+        }
+    }
+
+    for (const pair of urlMap) {
+        for (const fragment of pair[1].fragments) {
+            fragment.sort();
         }
     }
 
