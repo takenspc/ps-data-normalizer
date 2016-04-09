@@ -1,7 +1,7 @@
 'use strict';
 import * as fs from 'fs';
 import * as stringify from 'json-stable-stringify';
-import { EntityEntry } from './lib/merger';
+import { MergedStatusEntry } from './lib/merger';
 import { StatusEntry } from './lib';
 import * as normalizer from './';
 
@@ -39,20 +39,28 @@ async function normalize(): Promise<StatusEntry[][]> {
 /*
  * Entity Entry Formatter
  */
-async function merge(specEntries: StatusEntry[][]): Promise<Map<string, EntityEntry>> {
+async function merge(specEntries: StatusEntry[][]): Promise<MergedStatusEntry> {
     const merged = await normalizer.merge(specEntries);
 
     const text = stringify(merged, {
-        replacer: (key: string, map: Map<any, any>): any => {
-            if (map instanceof Map) {
+        replacer: (key: string, mapOrSet: Map<any, any> | Set<any>): any => {
+            if (mapOrSet instanceof Map) {
                 const obj = {};
-                for (const pair of map) {
+                for (const pair of mapOrSet) {
                     obj[pair[0]] = pair[1];
                 }
                 return obj;
             }
+            
+            if (mapOrSet instanceof Set) {
+                const array = [];
+                for (const value of mapOrSet) {
+                    array.push(value);
+                }
+                return array.sort();
+            }
 
-            return map;
+            return mapOrSet;
         },
         space: '\t',
     });
@@ -85,6 +93,7 @@ function run(argv: string[]): Promise<any> {
 run(process.argv).then(() => {
     process.exit();
 }).catch((err) => {
+    console.log('error');
     console.error(err);
     if (err.stack) {
         console.error(err.stack);

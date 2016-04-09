@@ -13,7 +13,7 @@ export function normalize(): Promise<StatusEntry[][]> {
     return normalizer.normalize();
 }
 
-export function merge(data: StatusEntry[][]): Promise<Map<string, merger.EntityEntry>> {
+export function merge(data: StatusEntry[][]): Promise<merger.MergedStatusEntry> {
     return merger.merge(data);
 }
 

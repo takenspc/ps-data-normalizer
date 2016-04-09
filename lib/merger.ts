@@ -27,12 +27,16 @@ class FragmentEntry {
 }
 
 
-class URLEntry {
+class UrlEntry {
     url: string
+    host: string
+    entity: string
     fragments: Map<string, FragmentEntry> = new Map()
 
-    constructor(url: string) {
+    constructor(url: string, host: string, entity: string) {
         this.url = url;
+        this.host = host;
+        this.entity = entity;
     }
 
     addStatusEntry(url: string, statusEntry: StatusEntry): void {
@@ -49,90 +53,38 @@ class URLEntry {
 }
 
 
-class HostEntry {
-    host: string
-    urls: Map<string, URLEntry> = new Map()
-
-    constructor(host: string) {
-        this.host = host;
-    }
-
-    addStatusEntry(url: string, statusEntry: StatusEntry): void {
-        const urlWithoutFragment = HostEntry.getURLWithoutFragment(url);
-        let urlEntry = this.urls.get(urlWithoutFragment);
-
-        if (!urlEntry) {
-            urlEntry = new URLEntry(urlWithoutFragment);
-            this.urls.set(urlWithoutFragment, urlEntry);
-        }
-
-        urlEntry.addStatusEntry(url, statusEntry);
-    }
-
-    static getURLWithoutFragment(url: string): string {
-        if (!url) {
-            return '';
-        }
-
-        const urlObject = parse(url);
-        urlObject.hash = '';
-        return format(urlObject);
-    }
-}
-
-
-export class EntityEntry {
-    entity: string
-    hosts: Map<string, HostEntry> = new Map()
-
-    constructor(entity: string) {
-        this.entity = entity;
-    }
-
-    addStatusEntry(url: string,statusEntry: StatusEntry): void {
-        const host = EntityEntry.getHost(url);
-
-        let hostEntry = this.hosts.get(host);
-
-        if (!hostEntry) {
-            hostEntry = new HostEntry(host);
-            this.hosts.set(host, hostEntry);
-        }
-
-        hostEntry.addStatusEntry(url, statusEntry);
-    }
-
-    static getHost(url: string): string {
-        if (!url) {
-            return '';
-        }
-
-        const urlObject = parse(url);
-        const host = urlObject.host;
-        const pathname = urlObject.pathname;
-        if (host === 'github.com') {
-            const username = /^\/([^/]+)\//.exec(pathname)[1];
-            const entity = username.toLowerCase();
-            return host + '/' + entity;
-        }
-
-        return host;
-    }
-}
-
-
-function getEntity(url: string): string {
+function getUrlWithoutFragment(url: string): string {
     if (!url) {
         return '';
     }
 
     const urlObject = parse(url);
+    urlObject.hash = '';
+    return format(urlObject);
+}
+
+interface HostAndEntity {
+    host: string
+    entity: string
+}
+
+function getHostAndEntity(url: string): HostAndEntity {
+    const hostAndEntity: HostAndEntity = { host: '', entity: '' };
+    if (!url) {
+        return hostAndEntity;
+    }
+
+    const urlObject = parse(url);
     const host = urlObject.host;
-    const pathname = urlObject.pathname;
+
     if (host === 'github.com') {
+        const pathname = urlObject.pathname;
         const username = /^\/([^/]+)\//.exec(pathname)[1];
         const entity = username.toLowerCase();
-        return entity;
+
+        hostAndEntity.host = host + '/' + entity;
+        hostAndEntity.entity = entity;
+        return hostAndEntity;
     }
 
     const domain = tld.getDomain(host);
@@ -141,30 +93,58 @@ function getEntity(url: string): string {
         entity = 'w3c';
     }
 
-    return entity;
+    hostAndEntity.host = host;
+    hostAndEntity.entity = entity;
+
+    return hostAndEntity;
 }
 
 
-export async function merge(statusEntriesList: StatusEntry[][]): Promise<Map<string, EntityEntry>> {
-    const entityMap: Map<string, EntityEntry> = new Map();
+export interface MergedStatusEntry {
+    urls: Map<string, UrlEntry>
+    entities: Map<string, Set<string>>
+    redirects: Map<string, any>
+}
+
+export async function merge(statusEntriesList: StatusEntry[][]): Promise<MergedStatusEntry> {
+    const urlMap: Map<string, UrlEntry> = new Map();
+    const entityMap: Map<string, Set<string>> = new Map();
+    const redirectMap: Map<string, any> = new Map();
 
     for (const statusEntries of statusEntriesList) {
         for (const statusEntry of statusEntries) {
-            const urlInfo = await normalizeWithRedirectInfo(statusEntry.url || '');
-            statusEntry.redirects = urlInfo.redirects;
+            const url = statusEntry.url || '';
+            const urlInfo = await normalizeWithRedirectInfo(url);
 
-            const normalizedURL = urlInfo.url;
-            const entity = getEntity(normalizedURL);
-
-            let entry = entityMap.get(entity);
-            if (!entry) {
-                entry = new EntityEntry(entity);
-                entityMap.set(entity, entry);
+            if (url !== '' && urlInfo.redirects.length > 0) {
+                redirectMap.set(url, urlInfo.redirects);
             }
 
-            entry.addStatusEntry(normalizedURL, statusEntry);
+            const normalizedUrl = urlInfo.url;
+
+            const normalizedUrlWithoutFragment = getUrlWithoutFragment(normalizedUrl);
+            let entry = urlMap.get(normalizedUrlWithoutFragment);
+            if (!entry) {
+                const hostAndEntity = getHostAndEntity(normalizedUrl);
+
+                const entity = hostAndEntity.entity;
+                if (!entityMap.has(entity)) {
+                    entityMap.set(entity, new Set());
+                }
+                const host = hostAndEntity.host;
+                entityMap.get(entity).add(host);
+
+                entry = new UrlEntry(normalizedUrlWithoutFragment, host, entity);
+                urlMap.set(normalizedUrlWithoutFragment, entry);
+            }
+
+            entry.addStatusEntry(normalizedUrl, statusEntry);
         }
     }
 
-    return entityMap;
+    return {
+        urls: urlMap,
+        entities: entityMap,
+        redirects: redirectMap,
+    };
 }
