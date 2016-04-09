@@ -20,7 +20,7 @@ function normalizeStatus(entry): Status {
     const status = statusMap.get(originalStatus);
     const channel = entry.shipped_milestone;
 
-    const behindFlag = !!entry.meta.needFlag || originalStatus === 'Behind a flag';
+    const behindFlag = originalStatus === 'Behind a flag';
     const prefixed = !!entry.prefixed;
     return new Status(status, originalStatus, channel, behindFlag, prefixed);
 }
