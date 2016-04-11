@@ -163,9 +163,9 @@ export async function merge(statusEntriesList: StatusEntry[][]): Promise<MergedS
         }
     }
 
-    for (const pair of urlMap) {
-        for (const fragment of pair[1].fragments) {
-            fragment.sort();
+    for (const urlEntryPair of urlMap) {
+        for (const fragmentPair of urlEntryPair[1].fragments) {
+            fragmentPair[1].sort();
         }
     }
 
