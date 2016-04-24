@@ -2,15 +2,14 @@
 import * as path from 'path';
 import { download } from '../utils';
 
-function downloadJSON(component: string, jsonPath: string): Promise<void> {
-    const url = 'https://svn.webkit.org' + jsonPath;    
+function downloadJSON(jsonPath: string, component: string): Promise<void> {
+    const url = 'https://svn.webkit.org/repository/webkit/trunk/' + jsonPath;    
     const outPath = path.join(__dirname, component + '-features.json');
     return download(url, outPath);
 }
 
 export function update(): Promise<any> {
-    return Promise.all([
-        downloadJSON('jsc', '/repository/webkit/trunk/Source/JavaScriptCore/features.json'),
-        downloadJSON('webcore', '/repository/webkit/trunk/Source/WebCore/features.json'),
-    ]);
+    return downloadJSON('Source/JavaScriptCore/features.json', 'jsc').then(() => {
+        return downloadJSON('Source/WebCore/features.json', 'webcore');
+    });
 }
