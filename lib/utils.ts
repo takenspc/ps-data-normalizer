@@ -15,7 +15,7 @@ export function exec(command: string, cwd: string): Promise<void> {
                 reject(err);
                 return;
             }
-            
+
             resolve();
         });
     });
