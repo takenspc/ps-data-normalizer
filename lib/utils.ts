@@ -3,12 +3,14 @@ import * as assert from 'assert';
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
+import * as http from 'http';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 
 
 export function exec(command: string, cwd: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+        console.log('start', command);
         childProcess.exec(command, { cwd: cwd }, (err, stdout, stderr) => {
             if (err) {
                 console.error(stderr);
@@ -16,6 +18,7 @@ export function exec(command: string, cwd: string): Promise<void> {
                 return;
             }
 
+            console.log('end', command);
             resolve();
         });
     });
@@ -23,6 +26,7 @@ export function exec(command: string, cwd: string): Promise<void> {
 
 export function download(url: string, outPath: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+        console.log('start', url);
         const writeStream = fs.createWriteStream(outPath);
 
         // write
@@ -43,6 +47,7 @@ export function download(url: string, outPath: string): Promise<void> {
             });
 
             res.on('end', () => {
+                console.log('end', url);
                 writeStream.end();
             });
         });
@@ -54,6 +59,7 @@ export function download(url: string, outPath: string): Promise<void> {
         });
     });
 }
+
 
 function readFile(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
